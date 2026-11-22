@@ -1,0 +1,4 @@
+project_id = "budget-tracker"
+
+[functions.ingest-expense]
+verify_jwt = false

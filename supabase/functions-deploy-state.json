@@ -1,0 +1,9 @@
+{
+  "projectId": "72730256",
+  "functions": {
+    "ingest-expense": {
+      "hasChanged": false,
+      "hash": "282205cfa4e9b2cfd37c8d86d66a7e93672aaf6b934f5af34d88e03d29ca539a"
+    }
+  }
+}

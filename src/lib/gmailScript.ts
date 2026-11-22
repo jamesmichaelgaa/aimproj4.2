@@ -1,0 +1,38 @@
+const DONE_LABEL = 'ledger-sent';
+
+export function buildGmailScript(endpoint: string): string {
+  return [
+    '// Ledger: sends bank alert emails from this Gmail account to your expense log.',
+    `const LEDGER_ENDPOINT = ${JSON.stringify(endpoint)};`,
+    `const DONE_LABEL = ${JSON.stringify(DONE_LABEL)};`,
+    '// Only emails matching this search are sent to Ledger. Edit it to fit your banks.',
+    `const SEARCH_QUERY = 'newer_than:7d -label:${DONE_LABEL} (subject:(purchase OR charged OR transaction OR debit OR receipt OR "card ending"))';`,
+    '',
+    'function sendBankAlertsToLedger() {',
+    '  const done = GmailApp.getUserLabelByName(DONE_LABEL) || GmailApp.createLabel(DONE_LABEL);',
+    '  const threads = GmailApp.search(SEARCH_QUERY, 0, 50);',
+    '  threads.forEach((thread) => {',
+    '    const allSent = thread.getMessages().every((message) => sendMessage(message));',
+    '    if (allSent) thread.addLabel(done);',
+    '  });',
+    '}',
+    '',
+    'function sendMessage(message) {',
+    '  const response = UrlFetchApp.fetch(LEDGER_ENDPOINT, {',
+    "    method: 'post',",
+    "    contentType: 'application/json',",
+    '    payload: JSON.stringify({',
+    '      subject: message.getSubject(),',
+    '      from: message.getFrom(),',
+    '      text: message.getPlainBody(),',
+    "      source: 'email',",
+    '    }),',
+    '    muteHttpExceptions: true,',
+    '  });',
+    '  const code = response.getResponseCode();',
+    '  // 422 means the email had no amount, so retrying it would never help.',
+    '  return code === 200 || code === 400 || code === 422;',
+    '}',
+    '',
+  ].join('\n');
+}
